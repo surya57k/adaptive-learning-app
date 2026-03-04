@@ -143,3 +143,55 @@ try:
 
 except:
     st.info("Not enough data for AI analysis yet.")
+# -------------------------
+# Adaptive Learning Engine
+# -------------------------
+
+st.header("Adaptive Learning Recommendation")
+
+try:
+    df = pd.read_csv(
+        "student_logs.csv",
+        names=["student_id", "topic", "score", "time_taken"]
+    )
+
+    from sklearn.cluster import KMeans
+
+    X = df[["score", "time_taken"]]
+
+    kmeans = KMeans(n_clusters=3, random_state=0)
+    df["learner_type"] = kmeans.fit_predict(X)
+
+    learner_labels = {
+        0: "Fast Learner",
+        1: "Careful Learner",
+        2: "Needs Reinforcement"
+    }
+
+    df["learner_label"] = df["learner_type"].map(learner_labels)
+
+    # get current student latest result
+    student_data = df[df["student_id"] == student_id].iloc[-1]
+
+    learner = student_data["learner_label"]
+
+    st.write(f"### Your Learning Type: {learner}")
+
+    if learner == "Fast Learner":
+        st.success("You understand quickly! You can move to advanced topics.")
+
+    elif learner == "Careful Learner":
+        st.info("You learn carefully. Review the concept once more for mastery.")
+
+    else:
+        st.warning("You may need reinforcement. Let's review the concept again.")
+
+        st.write("### Extra Explanation")
+
+        st.write("""
+        The **left ventricle** is the strongest chamber of the heart.
+        It pumps oxygen-rich blood through the aorta to the rest of the body.
+        """)
+
+except:
+    st.info("Complete the quiz to receive adaptive recommendations.")
