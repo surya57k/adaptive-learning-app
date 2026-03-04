@@ -108,3 +108,38 @@ try:
 
 except:
     st.info("No student data recorded yet.")
+# -------------------------
+# AI Learner Classification
+# -------------------------
+
+st.header("AI Learning Assessment")
+
+try:
+    df = pd.read_csv(
+        "student_logs.csv",
+        names=["student_id", "topic", "score", "time_taken"]
+    )
+
+    from sklearn.cluster import KMeans
+
+    # Features used for clustering
+    X = df[["score", "time_taken"]]
+
+    # Train simple clustering model
+    kmeans = KMeans(n_clusters=3, random_state=0)
+    df["learner_type"] = kmeans.fit_predict(X)
+
+    # Map cluster numbers to labels
+    learner_labels = {
+        0: "Fast Learner",
+        1: "Careful Learner",
+        2: "Needs Reinforcement"
+    }
+
+    df["learner_label"] = df["learner_type"].map(learner_labels)
+
+    st.write("### AI Learner Classification")
+    st.dataframe(df[["student_id", "score", "time_taken", "learner_label"]])
+
+except:
+    st.info("Not enough data for AI analysis yet.")
