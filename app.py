@@ -1,8 +1,13 @@
 import streamlit as st
 import pandas as pd
 import time
+import plotly.express as px
 
 st.title("Adaptive AI Learning Assistant")
+
+# -------------------------
+# Student Login
+# -------------------------
 
 student_id = st.text_input("Enter your Student ID")
 
@@ -12,6 +17,10 @@ if student_id == "":
 
 st.success(f"Welcome {student_id}")
 
+# -------------------------
+# Learning Section
+# -------------------------
+
 st.header("Learn: Human Heart")
 
 st.write("""
@@ -19,17 +28,21 @@ The human heart pumps blood through the body.
 The **left ventricle** pumps oxygenated blood to the body.
 """)
 
-start_time = time.time()
+# Start timer only once
+if "start_time" not in st.session_state:
+    st.session_state.start_time = time.time()
 
+# Quiz Question
 question = st.radio(
     "Which chamber pumps blood to the body?",
     ["Left Atrium", "Right Ventricle", "Left Ventricle"]
 )
 
+# Submit Button
 if st.button("Submit Answer"):
 
     end_time = time.time()
-    time_taken = round(end_time - start_time, 2)
+    time_taken = round(end_time - st.session_state.start_time, 2)
 
     score = 1 if question == "Left Ventricle" else 0
 
@@ -38,6 +51,9 @@ if st.button("Submit Answer"):
     else:
         st.error("Incorrect!")
 
+    st.write(f"Time taken: {time_taken} seconds")
+
+    # Save student result
     log = pd.DataFrame({
         "student_id": [student_id],
         "topic": ["Heart"],
@@ -48,3 +64,47 @@ if st.button("Submit Answer"):
     log.to_csv("student_logs.csv", mode="a", header=False, index=False)
 
     st.write("Your result has been recorded.")
+
+    # Reset timer for next question
+    st.session_state.start_time = time.time()
+
+# -------------------------
+# Learning Analytics
+# -------------------------
+
+st.header("Learning Analytics")
+
+try:
+    df = pd.read_csv(
+        "student_logs.csv",
+        names=["student_id", "topic", "score", "time_taken"]
+    )
+
+    st.write("### Raw Student Data")
+    st.dataframe(df)
+
+    st.write("### Average Score per Topic")
+
+    avg_scores = df.groupby("topic")["score"].mean().reset_index()
+
+    fig = px.bar(
+        avg_scores,
+        x="topic",
+        y="score",
+        title="Average Student Score by Topic"
+    )
+
+    st.plotly_chart(fig)
+
+    st.write("### Response Time Distribution")
+
+    fig2 = px.histogram(
+        df,
+        x="time_taken",
+        title="Response Time Distribution"
+    )
+
+    st.plotly_chart(fig2)
+
+except:
+    st.info("No student data recorded yet.")
