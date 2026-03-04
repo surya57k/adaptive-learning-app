@@ -2,6 +2,14 @@ import streamlit as st
 
 st.title("Adaptive AI Learning Assistant")
 
+student_id = st.text_input("Enter your Student ID")
+
+if student_id == "":
+    st.warning("Please enter your Student ID to continue")
+    st.stop()
+
+st.success(f"Welcome {student_id}")
+
 st.header("Welcome Student")
 
 topic = st.selectbox(
